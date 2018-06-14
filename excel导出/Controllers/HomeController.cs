@@ -4,6 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Web;
 using System.Web.Mvc;
+using System.IO;
+using NPOI.SS;
+using NPOI.HSSF.UserModel;
+
 
 namespace excel导出.Controllers
 {
@@ -34,7 +38,12 @@ namespace excel导出.Controllers
             return View();
         }
 
+        public ActionResult Excel2()
+        {
+            return View();
+        }
 
+        //第一种导出的方法  :采用表格的方式输出
         public ActionResult ExportToExcel()
         {
             var sbHtml = new StringBuilder();
@@ -63,6 +72,45 @@ namespace excel导出.Controllers
             ///第一种 使用FileContentResult
             byte[] fileContents = Encoding.UTF8.GetBytes(sbHtml.ToString());
             return File(fileContents, "application/ms-excel", "fileContents.xls");
+        }
+
+
+
+        //第二种 导出的方式 NPIO方式
+        public ActionResult ExportToExcel2()
+        {
+            //创建工作簿 
+            NPOI.SS.UserModel.IWorkbook workbook = new NPOI.XSSF.UserModel.XSSFWorkbook();
+            //创建 工作表 
+            NPOI.SS.UserModel.ISheet sheet1 = workbook.CreateSheet("SheetTest");    ///通过 工作簿来创建一个 工作表
+
+            //创建Cell 单元格 
+            NPOI.SS.UserModel.ICell cell1;    //
+
+            int i = 0;
+            int rowLimit = 100;
+
+            DateTime originalTime = DateTime.Now;
+            for(i=0; i<rowLimit;i++)
+            {
+                cell1 = sheet1.CreateRow(i).CreateCell(0);
+                cell1.SetCellValue("值"+i.ToString());
+            }
+
+            using (MemoryStream ms=new MemoryStream())
+            {
+                workbook.Write(ms);
+                var buffer = ms.GetBuffer();
+
+                ms.Close();
+                return File(buffer, "application/ms-excel", "test.xlsx");
+            }
+
+
+
+
+
+
         }
     }
 }
